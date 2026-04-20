@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ordem DeMolay Brasil — Conheça a Ordem</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #050505;
+    --deep-red: #6b0000;
+    --red: #c0120c;
+    --bright-red: #ff1a0e;
+    --gold: #c9a227;
+    --gold-light: #f0c040;
+    --gold-dark: #8a6d0a;
+    --white: #f5f0e8;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Rajdhani', sans-serif;
+    overflow-x: hidden;
+  }
+
+  #matrix-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    opacity: 0.15;
+    pointer-events: none;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 18px 60px;
+    background: linear-gradient(to bottom, rgba(5,5,5,0.96), transparent);
+  }
+
+  .nav-logo {
+    font-family: 'Cinzel', serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    line-height: 1.1;
+    white-space: nowrap;
+    max-width: 55%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 28px;
+    list-style: none;
+    flex-wrap: wrap;
+  }
+
+  .nav-links a {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--white);
+    text-decoration: none;
+    opacity: 0.65;
+    transition: opacity 0.2s, color 0.2s;
+    white-space: nowrap;
+  }
+
+  .nav-links a:hover { opacity: 1; color: var(--gold); }
+
+  /* HERO */
+  #hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 120px 40px 80px;
+    overflow: hidden;
+    z-index: 1;
+  }
+
+  .hero-glow {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(107,0,0,0.5) 0%, transparent 70%);
+  }
+
+  .hero-content { position: relative; z-index: 2; max-width: 860px; }
+
+  .hero-eyebrow {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.35em;
+    color: var(--red);
+    text-transform: uppercase;
+    margin-bottom: 26px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.3s forwards;
+  }
+
+  .hero-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(3rem, 8vw, 6.5rem);
+    font-weight: 900;
+    line-height: 1.0;
+    color: var(--white);
+    text-shadow: 0 0 80px rgba(192,18,12,0.35);
+    opacity: 0;
+    animation: fadeUp 0.9s ease 0.5s forwards;
+  }
+
+  .hero-title .gold { color: var(--gold); display: block; }
+
+  .hero-subtitle {
+    margin: 28px auto 0;
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    font-weight: 400;
+    line-height: 1.75;
+    color: rgba(245,240,232,0.62);
+    max-width: 600px;
+    opacity: 0;
+    animation: fadeUp 0.9s ease 0.7s forwards;
+  }
+
+  .hero-divider {
+    display: flex; align-items: center; gap: 18px; justify-content: center;
+    margin-top: 44px;
+    opacity: 0;
+    animation: fadeUp 0.9s ease 0.9s forwards;
+  }
+
+  .hero-divider-line {
+    width: 80px; height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold));
+  }
+  .hero-divider-line.rev { background: linear-gradient(to left, transparent, var(--gold)); }
+
+  .hero-divider-text {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem; letter-spacing: 0.3em; color: var(--gold); text-transform: uppercase;
+  }
+
+  .hero-cta-row {
+    display: flex; gap: 16px; justify-content: center; margin-top: 44px;
+    opacity: 0;
+    animation: fadeUp 0.9s ease 1.1s forwards;
+  }
+
+  .btn-primary {
+    padding: 15px 36px;
+    background: var(--red); color: var(--white);
+    font-family: 'Rajdhani', sans-serif; font-size: 0.88rem; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase; text-decoration: none;
+    border-radius: 2px;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 4px 28px rgba(192,18,12,0.35);
+  }
+  .btn-primary:hover { background: var(--bright-red); transform: translateY(-2px); box-shadow: 0 8px 38px rgba(255,26,14,0.45); }
+
+  .btn-outline {
+    padding: 15px 36px; background: transparent; color: var(--gold);
+    font-family: 'Rajdhani', sans-serif; font-size: 0.88rem; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase; text-decoration: none;
+    border: 1px solid var(--gold); border-radius: 2px;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .btn-outline:hover { background: rgba(201,162,39,0.1); transform: translateY(-2px); }
+
+  .scroll-indicator {
+    position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    animation: pulse 2s infinite;
+  }
+  .scroll-indicator span { font-family: 'Share Tech Mono', monospace; font-size: 0.62rem; letter-spacing: 0.22em; color: var(--gold); opacity: 0.5; }
+  .scroll-line { width: 1px; height: 48px; background: linear-gradient(to bottom, rgba(201,162,39,0.5), transparent); }
+
+  /* SECTIONS */
+  .section-wrap { position: relative; z-index: 1; }
+  section { max-width: 1160px; margin: 0 auto; padding: 96px 60px; }
+
+  .section-label { font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; letter-spacing: 0.32em; color: var(--red); text-transform: uppercase; margin-bottom: 14px; }
+  .section-title { font-family: 'Cinzel', serif; font-size: clamp(1.8rem, 4vw, 2.9rem); font-weight: 700; line-height: 1.15; color: var(--white); margin-bottom: 22px; }
+  .section-title em { color: var(--gold); font-style: normal; }
+  .section-body { font-size: 1.05rem; line-height: 1.85; color: rgba(245,240,232,0.68); max-width: 640px; }
+
+  .divider { height: 1px; background: linear-gradient(to right, transparent, rgba(201,162,39,0.25), transparent); margin: 0 60px; }
+
+  /* O QUE É */
+  #oque .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+  .stat-card {
+    padding: 28px 22px;
+    border: 1px solid rgba(201,162,39,0.18);
+    background: rgba(201,162,39,0.03);
+    border-radius: 3px;
+    transition: border-color 0.3s, background 0.3s, transform 0.3s;
+  }
+  .stat-card:hover { border-color: rgba(201,162,39,0.45); background: rgba(201,162,39,0.07); transform: translateY(-3px); }
+  .stat-number { font-family: 'Cinzel', serif; font-size: 2.2rem; font-weight: 900; color: var(--gold); line-height: 1; margin-bottom: 8px; }
+  .stat-label { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.12em; color: rgba(245,240,232,0.48); text-transform: uppercase; }
+
+  .highlight-quote {
+    margin-top: 32px; padding: 24px 28px;
+    border-left: 3px solid var(--red);
+    background: rgba(192,18,12,0.05);
+    font-family: 'Cinzel', serif; font-size: 1rem; font-style: italic; line-height: 1.7;
+    color: rgba(245,240,232,0.8);
+  }
+  .highlight-quote cite { display: block; margin-top: 12px; font-family: 'Share Tech Mono', monospace; font-size: 0.72rem; font-style: normal; letter-spacing: 0.15em; color: var(--red); text-transform: uppercase; }
+
+  /* OBJETIVO */
+  #objetivo { background: linear-gradient(to bottom, transparent, rgba(107,0,0,0.07), transparent); }
+
+  .objetivo-feature { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start; margin-top: 56px; }
+
+  .objetivo-card-main {
+    padding: 44px;
+    background: radial-gradient(ellipse at 30% 30%, rgba(107,0,0,0.35) 0%, rgba(5,5,5,0.6) 70%);
+    border: 1px solid rgba(192,18,12,0.25);
+    position: relative; overflow: hidden;
+  }
+  .objetivo-card-main::before { content: '"'; position: absolute; top: -20px; right: 20px; font-family: 'Cinzel', serif; font-size: 12rem; color: rgba(192,18,12,0.06); line-height: 1; pointer-events: none; }
+
+  .objetivo-big-text { font-family: 'Cinzel', serif; font-size: 1.4rem; font-weight: 700; line-height: 1.5; color: var(--white); margin-bottom: 20px; }
+  .objetivo-big-text em { color: var(--gold); font-style: normal; }
+  .objetivo-sub { font-size: 0.98rem; line-height: 1.82; color: rgba(245,240,232,0.65); }
+
+  .objetivo-list-items { display: flex; flex-direction: column; gap: 18px; }
+
+  .objetivo-list-item {
+    display: flex; gap: 16px; padding: 20px 22px;
+    border-left: 2px solid rgba(201,162,39,0.3);
+    background: rgba(201,162,39,0.03);
+    transition: border-color 0.3s, background 0.3s;
+  }
+  .objetivo-list-item:hover { border-color: var(--gold); background: rgba(201,162,39,0.07); }
+  .objetivo-list-item .icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 2px; }
+  .objetivo-list-item .text strong { display: block; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 0.9rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 5px; }
+  .objetivo-list-item .text p { font-size: 0.9rem; line-height: 1.7; color: rgba(245,240,232,0.6); }
+
+  /* BALUARTES */
+  .baluartes-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 52px; }
+
+  .baluarte-card {
+    padding: 40px 30px; border-top: 2px solid var(--red);
+    background: rgba(192,18,12,0.04);
+    transition: transform 0.3s, background 0.3s;
+  }
+  .baluarte-card:hover { transform: translateY(-6px); background: rgba(192,18,12,0.08); }
+  .baluarte-icon { font-size: 2rem; margin-bottom: 18px; display: block; }
+  .baluarte-title { font-family: 'Cinzel', serif; font-size: 1rem; font-weight: 700; color: var(--gold); margin-bottom: 12px; }
+  .baluarte-body { font-size: 0.93rem; line-height: 1.78; color: rgba(245,240,232,0.62); }
+
+  /* VIRTUDES */
+  #virtudes { background: linear-gradient(to bottom, transparent, rgba(107,0,0,0.06), transparent); }
+
+  .virtudes-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 52px; }
+
+  .virtude-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    border: 1px solid rgba(245,240,232,0.06);
+    transition: border-color 0.3s, background 0.3s, transform 0.3s, box-shadow 0.3s;
+    cursor: pointer;
+    overflow: hidden;
+  }
+  .virtude-chip:hover { border-color: rgba(201,162,39,0.3); background: rgba(201,162,39,0.05); transform: translateY(-4px); box-shadow: 0 4px 20px rgba(201,162,39,0.3); }
+  .virtue-question {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+    padding: 26px 20px;
+  }
+  .virtue-question.open { color: var(--gold); }
+  .virtue-answer {
+    width: 100%;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease, padding 0.3s;
+    font-size: 0.95rem;
+    line-height: 1.82;
+    color: rgba(245,240,232,0.6);
+    padding: 0;
+    text-align: center;
+    margin-top: 10px;
+    box-sizing: border-box;
+  }
+  .virtue-answer.open { max-height: 300px; padding: 10px; }
+  .virtude-num { font-family: 'Share Tech Mono', monospace; font-size: 0.62rem; color: var(--red); letter-spacing: 0.2em; margin-bottom: 10px; }
+  .virtude-name { font-family: 'Cinzel', serif; font-size: 0.95rem; font-weight: 700; color: var(--white); line-height: 1.3; }
+
+
+  /* HISTÓRIA */
+  .historia-timeline { display: flex; flex-direction: column; gap: 0; margin-top: 52px; max-width: 720px; }
+
+  .hist-item { display: flex; gap: 28px; position: relative; padding-bottom: 40px; }
+  .hist-item:last-child { padding-bottom: 0; }
+  .hist-left { display: flex; flex-direction: column; align-items: center; min-width: 40px; }
+
+  .hist-dot {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--deep-red); border: 2px solid var(--red);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    box-shadow: 0 0 18px rgba(192,18,12,0.3);
+  }
+  .hist-dot-inner { width: 10px; height: 10px; border-radius: 50%; background: var(--gold); }
+  .hist-line { flex: 1; width: 1px; background: linear-gradient(to bottom, rgba(192,18,12,0.35), rgba(192,18,12,0.08)); margin-top: 6px; }
+  .hist-item:last-child .hist-line { display: none; }
+
+  .hist-content { padding-top: 6px; }
+  .hist-year { font-family: 'Share Tech Mono', monospace; font-size: 0.75rem; color: var(--red); letter-spacing: 0.2em; margin-bottom: 6px; }
+  .hist-title { font-family: 'Cinzel', serif; font-size: 1.05rem; font-weight: 700; color: var(--white); margin-bottom: 8px; }
+  .hist-body { font-size: 0.93rem; line-height: 1.78; color: rgba(245,240,232,0.6); }
+
+  /* COMO FUNCIONA */
+  .como-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 52px; }
+
+  .como-card {
+    padding: 36px 28px; background: rgba(245,240,232,0.02); border: 1px solid rgba(245,240,232,0.06); border-radius: 3px;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+  .como-card:hover { border-color: rgba(192,18,12,0.3); transform: translateY(-4px); }
+  .como-icon { font-size: 1.8rem; margin-bottom: 14px; display: block; }
+  .como-num { font-family: 'Share Tech Mono', monospace; font-size: 0.68rem; color: var(--red); letter-spacing: 0.22em; margin-bottom: 14px; }
+  .como-title { font-family: 'Cinzel', serif; font-size: 0.95rem; font-weight: 700; color: var(--gold); margin-bottom: 12px; line-height: 1.35; }
+  .como-body { font-size: 0.9rem; line-height: 1.78; color: rgba(245,240,232,0.58); }
+
+  /* INGRESSO */
+  #ingresso { background: linear-gradient(to bottom, transparent, rgba(107,0,0,0.06), transparent); }
+
+  .steps-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; margin-top: 56px; position: relative; }
+  .steps-row::before { content: ''; position: absolute; top: 24px; left: 10%; right: 10%; height: 1px; background: linear-gradient(to right, var(--red), rgba(192,18,12,0.2)); z-index: 0; }
+
+  .step-item { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 0 12px; position: relative; z-index: 1; }
+  .step-circle {
+    width: 48px; height: 48px; border-radius: 50%; background: var(--red);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Share Tech Mono', monospace; font-size: 0.88rem; color: var(--white); font-weight: bold;
+    margin-bottom: 18px; box-shadow: 0 0 24px rgba(192,18,12,0.45);
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .step-item:hover .step-circle { transform: scale(1.15); box-shadow: 0 0 36px rgba(192,18,12,0.65); }
+  .step-item-title { font-family: 'Cinzel', serif; font-size: 0.82rem; font-weight: 700; color: var(--white); margin-bottom: 8px; line-height: 1.3; }
+  .step-item-body { font-size: 0.8rem; line-height: 1.65; color: rgba(245,240,232,0.5); }
+
+  /* FAQ */
+  .faq-list { margin-top: 52px; display: flex; flex-direction: column; gap: 10px; max-width: 820px; }
+
+  .faq-item { border: 1px solid rgba(245,240,232,0.07); border-radius: 2px; overflow: hidden; }
+
+  .faq-question {
+    width: 100%; background: rgba(245,240,232,0.02); border: none;
+    padding: 20px 26px; display: flex; justify-content: space-between; align-items: center;
+    cursor: pointer; text-align: left;
+    font-family: 'Rajdhani', sans-serif; font-size: 1rem; font-weight: 600; letter-spacing: 0.04em; color: var(--white);
+    transition: background 0.2s;
+  }
+  .faq-question:hover { background: rgba(245,240,232,0.04); }
+  .faq-question.open { color: var(--gold); background: rgba(201,162,39,0.04); }
+  .faq-arrow { font-size: 1.2rem; color: var(--red); transition: transform 0.3s; flex-shrink: 0; margin-left: 16px; }
+  .faq-question.open .faq-arrow { transform: rotate(45deg); }
+
+  .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.3s; font-size: 0.95rem; line-height: 1.82; color: rgba(245,240,232,0.6); padding: 0 26px; }
+  .faq-answer.open { max-height: 300px; padding: 0 26px 22px; }
+
+  /* CTA */
+  #cta-final { position: relative; z-index: 1; text-align: center; padding: 120px 60px; overflow: hidden; }
+  #cta-final::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(107,0,0,0.45) 0%, transparent 70%); }
+  #cta-final > * { position: relative; z-index: 1; }
+
+  .cta-title { font-family: 'Cinzel', serif; font-size: clamp(2rem, 5vw, 3.8rem); font-weight: 900; color: var(--white); margin-bottom: 18px; text-shadow: 0 0 50px rgba(192,18,12,0.3); }
+  .cta-sub { font-size: 1.08rem; line-height: 1.75; color: rgba(245,240,232,0.6); max-width: 520px; margin: 0 auto 46px; }
+
+  /* FOOTER */
+  footer { position: relative; z-index: 1; text-align: center; padding: 40px 60px; border-top: 1px solid rgba(245,240,232,0.05); }
+  .footer-logo { font-family: 'Cinzel', serif; font-size: 1.1rem; font-weight: 700; color: var(--gold); letter-spacing: 0.15em; margin-bottom: 10px; }
+  .footer-text { font-size: 0.8rem; color: rgba(245,240,232,0.28); letter-spacing: 0.06em; line-height: 1.9; }
+  .footer-text a { color: rgba(201,162,39,0.45); text-decoration: none; }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+  .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    nav { padding: 14px 22px; }
+    .nav-links { display: none; }
+    section { padding: 64px 22px; }
+    #oque .two-col, .objetivo-feature { grid-template-columns: 1fr; gap: 40px; }
+    .baluartes-row, .como-grid { grid-template-columns: 1fr; }
+    .virtudes-grid { grid-template-columns: repeat(2, 1fr); }
+    .steps-row { grid-template-columns: 1fr; gap: 28px; }
+    .steps-row::before { display: none; }
+    .hero-cta-row { flex-direction: column; align-items: center; }
+    #cta-final { padding: 80px 22px; }
+    .divider { margin: 0 22px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="matrix-canvas"></canvas>
+
+<nav>
+  <div class="nav-logo">DEMOLAY BRASIL / GCESP - Cavaleiros da Terra Rasgada nº1112</div>
+  <ul class="nav-links">
+    <li><a href="#oque">A Ordem</a></li>
+    <li><a href="#objetivo">Missão</a></li>
+    <li><a href="#baluartes">Valores</a></li>
+    <li><a href="#historia">História</a></li>
+    <li><a href="#como-funciona">Vivência</a></li>
+    <li><a href="#ingresso">Ingresso</a></li>
+    <li><a href="#contato">Contato</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Cavaleiros da Terra Rasgada nº1112</p>
+    <h1 class="hero-title">
+      Ordem<br><span class="gold">DeMolay</span>
+    </h1>
+    <p class="hero-subtitle">
+      Uma organização para jovens que buscam crescer com caráter, formar amizades verdadeiras e se preparar para os desafios do mundo.
+    </p>
+    <div class="hero-divider">
+      <div class="hero-divider-line"></div>
+      <span class="hero-divider-text">Escola de Vida · 12 a 21 anos</span>
+      <div class="hero-divider-line rev"></div>
+    </div>
+    <div class="hero-cta-row">
+      <a href="#oque" class="btn-primary">Conheça a Ordem</a>
+      <a href="#contato" class="btn-outline">Quero Participar</a>
+    </div>
+  </div>
+  <div class="scroll-indicator">
+    <span>scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- O QUE É -->
+<div class="section-wrap">
+<section id="oque">
+  <div class="two-col">
+    <div>
+      <p class="section-label reveal"># 01 — O que é</p>
+      <h2 class="section-title reveal">Uma <em>escola de vida</em> para jovens</h2>
+      <p class="section-body reveal">A Ordem DeMolay é uma organização fraternal voltada para jovens do sexo masculino entre 12 e 21 anos. Fundada nos EUA em 1919 e presente no Brasil desde 1980, ela impactou a vida de milhares de jovens, ajudando-os a se tornarem homens mais conscientes, responsáveis e comprometidos com o bem.</p>
+      <p class="section-body reveal" style="margin-top: 18px;">Mais do que um clube, é um espaço onde o jovem aprende vivendo — por meio de cerimônias, projetos sociais, debates e experiências que desenvolvem caráter e preparam para a vida adulta. Cada unidade local, chamada de <strong style="color:var(--gold)">Capítulo</strong>, é conduzida pelos próprios jovens.</p>
+      <div class="highlight-quote reveal">
+        "Habilidade e personalidade podem abrir portas, mas é o caráter que as mantém abertas."
+        <cite>— Frank Sherman Land · Fundador da Ordem DeMolay</cite>
+      </div>
+    </div>
+    <div class="stat-grid reveal">
+      <div class="stat-card">
+        <div class="stat-number">1919</div>
+        <div class="stat-label">Fundação nos EUA</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">1980</div>
+        <div class="stat-label">Chegada ao Brasil</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">12–21</div>
+        <div class="stat-label">Faixa etária</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">100+</div>
+        <div class="stat-label">Anos de história</div>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="divider"></div>
+
+<!-- OBJETIVO -->
+<div class="section-wrap">
+<section id="objetivo">
+  <p class="section-label reveal"># 02 — Missão</p>
+  <h2 class="section-title reveal">O que a Ordem quer <em>formar</em></h2>
+  <p class="section-body reveal">A principal missão vai muito além de preparar alguém para ocupar cargos. O verdadeiro objetivo é ajudar você a se tornar uma pessoa melhor — com valores firmes, atitudes corretas e vontade de fazer a diferença no mundo.</p>
+  <div class="objetivo-feature">
+    <div class="objetivo-card-main reveal">
+      <p class="objetivo-big-text">A Ordem DeMolay forma <em>homens de caráter</em> — não apenas líderes.</p>
+      <p class="objetivo-sub">Pessoas que respeitam suas famílias, valorizam a espiritualidade, sabem ouvir e dialogar, e buscam fazer o certo mesmo quando é difícil. A liderança é consequência natural da vivência e do compromisso com o bem.</p>
+      <p class="objetivo-sub" style="margin-top: 16px;">Aqui você aprende não apenas ouvindo discursos, mas participando de atividades que desafiam, emocionam e transformam — dentro de um ambiente seguro, fraterno e saudável.</p>
+    </div>
+    <div class="objetivo-list-items">
+      <div class="objetivo-list-item reveal">
+        <span class="icon">🎯</span>
+        <div class="text"><strong>Formação de Caráter</strong><p>Desenvolvimento de valores como lealdade, honestidade, responsabilidade e respeito que sustentam qualquer realização na vida.</p></div>
+      </div>
+      <div class="objetivo-list-item reveal">
+        <span class="icon">🗣️</span>
+        <div class="text"><strong>Habilidades Práticas</strong><p>Falar em público, planejar eventos, trabalhar em equipe e liderar projetos — habilidades concretas aprendidas na prática.</p></div>
+      </div>
+      <div class="objetivo-list-item reveal">
+        <span class="icon">🌐</span>
+        <div class="text"><strong>Visão de Mundo</strong><p>Cidadania, espiritualidade, pensamento crítico e consciência social para enfrentar os desafios do século XXI.</p></div>
+      </div>
+      <div class="objetivo-list-item reveal">
+        <span class="icon">🤝</span>
+        <div class="text"><strong>Amizades Genuínas</strong><p>Vínculos fraternos construídos sobre valores compartilhados e experiências transformadoras que duram a vida toda.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="divider"></div>
+
+<!-- BALUARTES -->
+<div class="section-wrap">
+<section id="baluartes">
+  <p class="section-label reveal"># 03 — Os três baluartes</p>
+  <h2 class="section-title reveal">Os pilares que <em>sustentam</em> a Ordem</h2>
+  <p class="section-body reveal">A Ordem DeMolay é estruturada sobre três pilares fundamentais que garantem um espaço onde cada membro pode se expressar, questionar e crescer com liberdade.</p>
+  <div class="baluartes-row">
+    <div class="baluarte-card reveal">
+      <span class="baluarte-icon">⚖️</span>
+      <div class="baluarte-title">Liberdade Civil</div>
+      <p class="baluarte-body">Cada membro aprende a defender seus direitos e os dos outros, formando cidadãos conscientes e comprometidos com a democracia, a justiça e a responsabilidade social.</p>
+    </div>
+    <div class="baluarte-card reveal">
+      <span class="baluarte-icon">🕊️</span>
+      <div class="baluarte-title">Liberdade Religiosa</div>
+      <p class="baluarte-body">A Ordem exige crença em Deus, mas respeita plenamente todas as fés. A espiritualidade é vivida com tolerância e respeito mútuo — sem imposição de doutrina alguma.</p>
+    </div>
+    <div class="baluarte-card reveal">
+      <span class="baluarte-icon">📚</span>
+      <div class="baluarte-title">Liberdade Intelectual</div>
+      <p class="baluarte-body">O pensamento crítico, a busca pelo conhecimento e a capacidade de questionar são estimulados. Cada jovem tem voz para expressar suas opiniões e ser quem realmente é.</p>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="divider"></div>
+
+<!-- HISTÓRIA -->
+<div class="section-wrap">
+<section id="historia">
+  <p class="section-label reveal"># 04 — História</p>
+  <h2 class="section-title reveal">Uma história de <em>mais de um século</em></h2>
+  <p class="section-body reveal">Da cidade de Kansas City até os quatro cantos do Brasil, a Ordem DeMolay percorreu um caminho de formação de líderes e cidadãos que marcaram o mundo.</p>
+  <div class="historia-timeline">
+    <div class="hist-item reveal">
+      <div class="hist-left"><div class="hist-dot"><div class="hist-dot-inner"></div></div><div class="hist-line"></div></div>
+      <div class="hist-content">
+        <p class="hist-year">// 1919</p>
+        <h3 class="hist-title">Fundação nos Estados Unidos</h3>
+        <p class="hist-body">Frank Sherman Land funda a Ordem DeMolay em Kansas City, Missouri, reunindo jovens em torno de valores morais, fraternidade e desenvolvimento de caráter.</p>
+      </div>
+    </div>
+    <div class="hist-item reveal">
+      <div class="hist-left"><div class="hist-dot"><div class="hist-dot-inner"></div></div><div class="hist-line"></div></div>
+      <div class="hist-content">
+        <p class="hist-year">// O nome</p>
+        <h3 class="hist-title">Por que Jacques de Molay?</h3>
+        <p class="hist-body">O nome é homenagem a Jacques de Molay, último Grão-Mestre dos Cavaleiros Templários — símbolo de fidelidade e coragem. A escolha é simbólica, representando os valores que a Ordem quer transmitir.</p>
+      </div>
+    </div>
+    <div class="hist-item reveal">
+      <div class="hist-left"><div class="hist-dot"><div class="hist-dot-inner"></div></div><div class="hist-line"></div></div>
+      <div class="hist-content">
+        <p class="hist-year">// Expansão mundial</p>
+        <h3 class="hist-title">Alcance global</h3>
+        <p class="hist-body">A Ordem se expandiu por todo o mundo, formando gerações de jovens. Entre os ex-membros notáveis estão Walt Disney, John Wayne e o astronauta Edgar Mitchell.</p>
+      </div>
+    </div>
+    <div class="hist-item reveal">
+      <div class="hist-left"><div class="hist-dot"><div class="hist-dot-inner"></div></div><div class="hist-line"></div></div>
+      <div class="hist-content">
+        <p class="hist-year">// 1980</p>
+        <h3 class="hist-title">Chegada ao Brasil</h3>
+        <p class="hist-body">A Ordem DeMolay chega ao Brasil, onde o Supremo Conselho, sediado em Brasília-DF, passa a coordenar os Capítulos espalhados por todo o país.</p>
+      </div>
+    </div>
+    <div class="hist-item reveal">
+      <div class="hist-left"><div class="hist-dot"><div class="hist-dot-inner"></div></div></div>
+      <div class="hist-content">
+        <p class="hist-year">// Hoje</p>
+        <h3 class="hist-title">Mais de um século de formação</h3>
+        <p class="hist-body">Com mais de 100 anos, a Ordem DeMolay continua firme — adaptando-se aos novos tempos sem abrir mão dos princípios que a tornaram uma das maiores organizações juvenis do mundo.</p>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="divider"></div>
+
+<!-- COMO FUNCIONA -->
+<div class="section-wrap">
+<section id="como-funciona">
+  <p class="section-label reveal"># 05 — Vivência</p>
+  <h2 class="section-title reveal">Como <em>funciona</em> na prática</h2>
+  <p class="section-body reveal">A vida na Ordem DeMolay é rica e variada — cada Capítulo é um espaço vivo onde jovens aprendem na prática o que nenhuma sala de aula consegue ensinar.</p>
+  <div class="como-grid">
+    <div class="como-card reveal">
+      <span class="como-icon">🏛️</span>
+      <p class="como-num">// Capítulos</p>
+      <h3 class="como-title">Unidades locais conduzidas por jovens</h3>
+      <p class="como-body">Os próprios membros elegem seus líderes, planejam atividades e organizam eventos, com orientação de adultos voluntários do Conselho Consultivo.</p>
+    </div>
+    <div class="como-card reveal">
+      <span class="como-icon">📜</span>
+      <p class="como-num">// Reuniões</p>
+      <h3 class="como-title">Cerimônias com propósito educativo</h3>
+      <p class="como-body">As reuniões seguem um ritual simbólico e formativo — cada cerimônia transmite valores por meio de símbolos e momentos de reflexão coletiva, sem qualquer misticismo.</p>
+    </div>
+    <div class="como-card reveal">
+      <span class="como-icon">🌍</span>
+      <p class="como-num">// Projetos</p>
+      <h3 class="como-title">Ação social e engajamento</h3>
+      <p class="como-body">Projetos sociais, ações filantrópicas, debates e eventos culturais fazem parte do cotidiano. A Ordem é um espaço de aprendizado com impacto real na comunidade.</p>
+    </div>
+    <div class="como-card reveal">
+      <span class="como-icon">🏆</span>
+      <p class="como-num">// Cargos</p>
+      <h3 class="como-title">Responsabilidade real desde jovem</h3>
+      <p class="como-body">Os cargos dentro do Capítulo têm funções reais: planejar, coordenar, liderar. Cada cargo é um exercício concreto de responsabilidade e comprometimento.</p>
+    </div>
+    <div class="como-card reveal">
+      <span class="como-icon">🤝</span>
+      <p class="como-num">// Fraternidade</p>
+      <h3 class="como-title">Amizades que duram a vida toda</h3>
+      <p class="como-body">O vínculo entre os DeMolays vai além da convivência casual — amizades genuínas, baseadas em valores compartilhados e experiências que marcam para sempre.</p>
+    </div>
+    <div class="como-card reveal">
+      <span class="como-icon">🎓</span>
+      <p class="como-num">// Seniores</p>
+      <h3 class="como-title">O vínculo vai além dos 21 anos</h3>
+      <p class="como-body">Ao completar 21 anos, o membro torna-se Sênior DeMolay, podendo atuar no Conselho Consultivo como voluntário. A jornada não termina — ela se transforma.</p>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="divider"></div>
+
+<!-- VIRTUDES -->
+<div class="section-wrap">
+<section id="virtudes">
+  <p class="section-label reveal"># 06 — As sete virtudes</p>
+  <h2 class="section-title reveal">Virtudes que <em>guiam</em> cada DeMolay</h2>
+  <p class="section-body reveal">Além dos baluartes, sete virtudes formam o núcleo da identidade de todo membro, sendo trabalhadas e vivenciadas a cada reunião, projeto e cerimônia.</p>
+  <div class="virtudes-grid">
+    <div class="virtude-chip reveal" onclick="toggleVirtue(this)">
+      <div class="virtue-question">
+        <div class="virtude-num">01</div>
+        <div class="virtude-name">Amor Filial</div>
+      </div>
+      <div class="virtue-answer">É o amor entre pais e filhos: um sentimento incondicional que existe antes mesmo do nascimento, acompanha toda a vida e vai além dela — chamado de “ágape”, um amor que existe simplesmente por existir.</div>
+    </div>
+    <div class="virtude-chip reveal" onclick="toggleVirtue(this)">
+      <div class="virtue-question">
+        <div class="virtude-num">02</div>
+        <div class="virtude-name">Reverência Pelas Coisas Sagradas</div>
+      </div>
+      <div class="virtue-answer">“Ao ingressar na Ordem DeMolay, o jovem declara uma fé profunda, viva e permanente em Deus, reconhecendo que sem essa fé e a graça divina, seus trabalhos não teriam propósito.”</div>
+    </div>
+    <div class="virtude-chip reveal" onclick="toggleVirtue(this)">
+      <div class="virtue-question">
+        <div class="virtude-num">03</div>
+        <div class="virtude-name">Cortesia</div>
+      </div>
+      <div class="virtue-answer">“Uma atitude que vai além das amizades, alcançando desconhecidos, os mais velhos e todas as pessoas. É uma cortesia que transmite calor humano e um sorriso, tornando a vida mais agradável para o próximo e iluminando o caminho à frente.”</div>
+    </div>
+    <div class="virtude-chip reveal" onclick="toggleVirtue(this)">
+      <div class="virtue-question">
+        <div class="virtude-num">04</div>
+        <div class="virtude-name">Companheirismo</div>
+      </div>
+      <div class="virtue-answer">“Milhões de jovens já se dedicaram aos mesmos princípios de boa filiação e cidadania, e, enquanto permanecerem fiéis a essas promessas e a Ordem DeMolay existir, todos serão um só.”</div>
+    </div>
+    <div class="virtude-chip reveal" onclick="toggleVirtue(this)">
+      <div class="virtue-question">
+        <div class="virtude-num">05</div>
+        <div class="virtude-name">Fidelidade</div>
+      </div>
+      <div class="virtue-answer">“Um DeMolay não pode, em hipótese alguma, ser falso a seus votos, suas promessas, seus amigos ou a Deus, sendo diariamente chamado a defender os princípios da Ordem e a agir de forma firme como líder e como homem.”</div>
+    </div>
+    <div class="virtude-chip reveal" onclick="toggleVirtue(this)">
+      <div class="virtue-question">
+        <div class="virtude-num">06</div>
+        <div class="virtude-name">Pureza</div>
+      </div>
+      <div class="virtue-answer">“O símbolo da Pureza, não a Pureza do corpo, a qual todos praticamos, mas a Pureza de todo o pensamento, palavra e ação. Somente puro, pode um DeMolay ser digno representante da pureza de nossos ensinamentos.”</div>
+    </div>
+    <div class="virtude-chip reveal" onclick="toggleVirtue(this)">
+      <div class="virtue-question">
+        <div class="virtude-num">07</div>
+        <div class="virtude-name">Patriotismo</div>
+      </div>
+      <div class="virtue-answer">“Talvez, nós nunca sejamos chamados a defender nossa pátria no campo de batalha, porém cada dia nos apresenta novas oportunidades para nos firmarmos como bons e corretos cidadãos, a serviço daquela querida bandeira e de nossa reverência pátria.”</div>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="divider"></div>
+
+<!-- INGRESSO -->
+<div class="section-wrap">
+<section id="ingresso">
+  <p class="section-label reveal"># 07 — Como participar</p>
+  <h2 class="section-title reveal">O caminho para se <em>tornar um DeMolay</em></h2>
+  <p class="section-body reveal">O processo é estruturado para garantir que cada candidato entre com consciência, comprometimento e valores alinhados com os princípios da Ordem.</p>
+  <div class="steps-row">
+    <div class="step-item reveal">
+      <div class="step-circle">01</div>
+      <h3 class="step-item-title">Interesse</h3>
+      <p class="step-item-body">Procure um Capítulo próximo ou acesse o programa "O Caminho Começa Aqui" no site oficial.</p>
+    </div>
+    <div class="step-item reveal">
+      <div class="step-circle">02</div>
+      <h3 class="step-item-title">Participação</h3>
+      <p class="step-item-body">Participe de atividades abertas, conheça os membros e sinta a dinâmica da Ordem de perto.</p>
+    </div>
+    <div class="step-item reveal">
+      <div class="step-circle">03</div>
+      <h3 class="step-item-title">Indicação</h3>
+      <p class="step-item-body">Um DeMolay Ativo, Sênior ou maçom assina sua ficha, assumindo a responsabilidade pelo seu ingresso.</p>
+    </div>
+    <div class="step-item reveal">
+      <div class="step-circle">04</div>
+      <h3 class="step-item-title">Entrevista</h3>
+      <p class="step-item-body">Uma conversa acolhedora para conhecimento mútuo — um momento de reflexão, não um interrogatório.</p>
+    </div>
+    <div class="step-item reveal">
+      <div class="step-circle">05</div>
+      <h3 class="step-item-title">Iniciação</h3>
+      <p class="step-item-body">Cerimônia simbólica e formativa que marca o início oficial da sua jornada DeMolay.</p>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="divider"></div>
+
+<!-- CONTATO -->
+<div class="section-wrap">
+<section id="contato">
+  <p class="section-label reveal"># 08 — Dados de contato</p>
+  <h2 class="section-title reveal">Entre em <em>contato</em> conosco</h2>
+  <p class="section-body reveal">Para mais informações sobre o Capítulo Cavaleiros da Terra Rasgada nº1112, entre em contato com nossos líderes.</p>
+  <div style="margin-top: 52px; display: flex; flex-direction: column; gap: 20px;">
+    <div>
+      <strong>Mestre Conselheiro</strong> - Eduardo Sampaio<br>
+      <span style="color: var(--gold);">(15) 99727-6326</span>
+    </div>
+    <div>
+      <strong>Presidente do Conselho</strong> - Jefferson Sampaio<br>
+      <span style="color: var(--gold);">(15) 99722-0884</span>
+    </div>
+    <div>
+      <strong>Consultor</strong> - Robson Vieira<br>
+      <span style="color: var(--gold);">(15) 99142-1640</span>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="divider"></div>
+
+<!-- FAQ -->
+<div class="section-wrap">
+<section id="faq">
+  <p class="section-label reveal"># 09 — Dúvidas</p>
+  <h2 class="section-title reveal">Perguntas <em>frequentes</em></h2>
+  <div class="faq-list reveal">
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">A Ordem DeMolay é uma religião?<span class="faq-arrow">+</span></button>
+      <div class="faq-answer">Não. A Ordem não é uma religião nem está ligada a uma específica. Exige-se crença em Deus, mas a instituição respeita todas as fés sem impor doutrinas. A espiritualidade é valorizada com tolerância e liberdade.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">A Ordem é preparação para a Maçonaria?<span class="faq-arrow">+</span></button>
+      <div class="faq-answer">Não. A Ordem DeMolay é uma instituição autônoma, voltada exclusivamente para jovens. Embora seja patrocinada pela Maçonaria, não há obrigação ou expectativa de que qualquer membro se torne maçom — são caminhos totalmente separados e independentes.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">Os rituais têm caráter místico ou ocultista?<span class="faq-arrow">+</span></button>
+      <div class="faq-answer">Absolutamente não. Os rituais são cerimônias simbólicas e educativas — gestos, palavras e símbolos que transmitem valores como honra, fraternidade e responsabilidade. Não há qualquer relação com misticismo ou práticas sobrenaturais.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">Posso sair se não me adaptar?<span class="faq-arrow">+</span></button>
+      <div class="faq-answer">Claro. A participação é totalmente voluntária e você pode se desligar a qualquer momento, sem cobranças. A Ordem respeita sua escolha — e o que você viveu ali certamente deixará algum aprendizado.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">Preciso conhecer alguém para entrar?<span class="faq-arrow">+</span></button>
+      <div class="faq-answer">É necessário que um DeMolay Ativo, Sênior ou maçom assine sua ficha de indicação. Se você ainda não conhece ninguém, pode se inscrever pelo programa oficial e o Capítulo mais próximo entrará em contato para te apresentar à Ordem.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">Existe custo para participar?<span class="faq-arrow">+</span></button>
+      <div class="faq-answer">O valor é de R$20,00, uma contribuição simbólica para cobrir custos de materiais e eventos. A dificuldade financeira não deve ser um impeditivo — converse com o Conselho Consultivo.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">O que acontece quando um DeMolay faz 21 anos?<span class="faq-arrow">+</span></button>
+      <div class="faq-answer">Aos 21 anos, o membro torna-se Sênior DeMolay, com novos papéis: pode atuar no Conselho Consultivo como voluntário ou manter o vínculo fraterno. A jornada DeMolay não termina — ela se transforma.</div>
+    </div>
+  </div>
+</section>
+</div>
+
+<footer>
+  <p class="footer-logo">DEMOLAY BRASIL</p>
+  <p class="footer-text">
+    <a href="https://www.demolay.org.br" target="_blank">www.demolay.org.br</a> <a href="https://www.instagram.com/ctr.sorocaba/" target="_blank">@ctr.sorocaba</a>
+  </p>
+</footer>
+
+<script>
+  // MATRIX RAIN
+  const canvas = document.getElementById('matrix-canvas');
+  const ctx = canvas.getContext('2d');
+  function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+  const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノ';
+  const fontSize = 14;
+  let drops = Array(Math.floor(canvas.width / fontSize)).fill(1);
+  function drawMatrix() {
+    ctx.fillStyle = 'rgba(5,5,5,0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.font = `${fontSize}px 'Share Tech Mono', monospace`;
+    for (let i = 0; i < drops.length; i++) {
+      const text = chars[Math.floor(Math.random() * chars.length)];
+      ctx.fillStyle = Math.random() > 0.95 ? '#c9a227' : '#c0120c';
+      ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+      drops[i]++;
+    }
+  }
+  setInterval(drawMatrix, 60);
+
+  // SCROLL REVEAL
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 70);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // FAQ
+  function toggleFaq(btn) {
+    const answer = btn.nextElementSibling;
+    const isOpen = btn.classList.contains('open');
+    document.querySelectorAll('.faq-question').forEach(b => { b.classList.remove('open'); b.nextElementSibling.classList.remove('open'); });
+    if (!isOpen) { btn.classList.add('open'); answer.classList.add('open'); }
+  }
+
+  // VIRTUE
+  function toggleVirtue(card) {
+    const question = card.querySelector('.virtue-question');
+    const answer = card.querySelector('.virtue-answer');
+    const isOpen = question.classList.contains('open');
+    document.querySelectorAll('.virtue-question').forEach(q => q.classList.remove('open'));
+    document.querySelectorAll('.virtue-answer').forEach(a => a.classList.remove('open'));
+    if (!isOpen) { question.classList.add('open'); answer.classList.add('open'); }
+  }
+</script>
+</body>
+</html>
