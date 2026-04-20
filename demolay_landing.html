@@ -414,17 +414,127 @@
   /* RESPONSIVE */
   @media (max-width: 900px) {
     nav { padding: 14px 22px; }
+    .nav-logo { font-size: 0.68rem; max-width: 60%; }
     .nav-links { display: none; }
     section { padding: 64px 22px; }
     #oque .two-col, .objetivo-feature { grid-template-columns: 1fr; gap: 40px; }
     .baluartes-row, .como-grid { grid-template-columns: 1fr; }
-    .virtudes-grid { grid-template-columns: repeat(2, 1fr); }
+    .virtudes-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
     .steps-row { grid-template-columns: 1fr; gap: 28px; }
     .steps-row::before { display: none; }
     .hero-cta-row { flex-direction: column; align-items: center; }
     #cta-final { padding: 80px 22px; }
     .divider { margin: 0 22px; }
+    .hero-title { font-size: clamp(2.2rem, 6vw, 4rem); }
+    .hero-subtitle { font-size: clamp(0.9rem, 1.8vw, 1rem); }
+    section { max-width: 100%; }
   }
+  
+  @media (max-width: 600px) {
+    nav {
+      padding: 12px 16px;
+      flex-direction: column;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .nav-logo {
+      font-size: 0.65rem;
+      max-width: 100%;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+      line-height: 1.2;
+    }
+    .nav-links { display: none; }
+    
+    section {
+      padding: 48px 16px;
+      max-width: 100%;
+    }
+    
+    .hero-title { font-size: clamp(1.8rem, 5.5vw, 3rem); }
+    .hero-subtitle { font-size: clamp(0.85rem, 1.5vw, 0.95rem); }
+    .hero-divider { flex-wrap: wrap; gap: 10px; }
+    .hero-divider-line { width: 40px; }
+    .hero-divider-text { font-size: 0.65rem; }
+    .hero-cta-row { gap: 12px; }
+    
+    .btn-primary, .btn-outline {
+      padding: 12px 28px;
+      font-size: 0.8rem;
+    }
+    
+    .section-title { font-size: clamp(1.4rem, 3.5vw, 2rem); }
+    .section-body { font-size: 1rem; }
+    
+    .baluartes-row, .como-grid, .virtudes-grid {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    
+    .virtude-chip .virtue-question {
+      padding: 20px 16px;
+    }
+    
+    .steps-row {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+    
+    .faq-question, .faq-answer {
+      font-size: 0.95rem;
+    }
+    
+    #cta-final {
+      padding: 60px 16px;
+    }
+    
+    footer {
+      padding: 30px 16px;
+    }
+    
+    .footer-logo { font-size: 0.95rem; }
+    .footer-text { font-size: 0.75rem; }
+    
+    .divider { margin: 0 16px; }
+    
+    .hero-content { max-width: 100%; }
+    .historia-timeline { max-width: 100%; }
+    .faq-list { max-width: 100%; }
+  }
+  
+  @media (max-width: 480px) {
+    nav { padding: 10px 12px; }
+    .nav-logo { font-size: 0.6rem; }
+    
+    section { padding: 40px 12px; }
+    
+    .hero-title { font-size: clamp(1.5rem, 5vw, 2.5rem); }
+    .hero-subtitle { font-size: clamp(0.8rem, 1.2vw, 0.9rem); }
+    
+    .btn-primary, .btn-outline {
+      padding: 10px 24px;
+      font-size: 0.75rem;
+    }
+    
+    .section-title { font-size: clamp(1.2rem, 3vw, 1.8rem); }
+    .section-label { font-size: 0.65rem; }
+    .section-body { font-size: 0.95rem; }
+    
+    .virtude-chip .virtue-question {
+      padding: 16px 12px;
+    }
+    
+    .virtude-num { font-size: 0.55rem; }
+    .virtude-name { font-size: 0.85rem; }
+    
+    footer { padding: 20px 12px; }
+    .footer-logo { font-size: 0.85rem; }
+    .footer-text { font-size: 0.7rem; }
+    
+    .divider { margin: 0 12px; }
+  }
+
 </style>
 </head>
 <body>
