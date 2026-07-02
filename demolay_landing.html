@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ordem DeMolay Brasil — Conheça a Ordem</title>
+<title>Capítulo Cavaleiros da Terra Rasgada nº1112 — Ordem DeMolay Brasil</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -100,7 +100,7 @@
 
   .hero-glow {
     position: absolute; inset: 0;
-    background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(107,0,0,0.5) 0%, transparent 70%);
+    background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(107,0,0,0.2) 0%, transparent 70%);
   }
 
   .hero-content { position: relative; z-index: 2; max-width: 860px; }
@@ -122,7 +122,7 @@
     font-weight: 900;
     line-height: 1.0;
     color: var(--white);
-    text-shadow: 0 0 80px rgba(192,18,12,0.35);
+    text-shadow: 0 0 40px rgba(192,18,12,0.2);
     opacity: 0;
     animation: fadeUp 0.9s ease 0.5s forwards;
   }
@@ -353,6 +353,20 @@
   .como-title { font-family: 'Cinzel', serif; font-size: 0.95rem; font-weight: 700; color: var(--gold); margin-bottom: 12px; line-height: 1.35; }
   .como-body { font-size: 0.9rem; line-height: 1.78; color: rgba(245,240,232,0.58); }
 
+  /* AÇÕES */
+  .acoes-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 52px; }
+  .acao-card {
+    overflow: hidden;
+    border: 1px solid rgba(245,240,232,0.08);
+    background: rgba(245,240,232,0.02);
+    transition: transform 0.3s, border-color 0.3s;
+  }
+  .acao-card:hover { transform: translateY(-4px); border-color: rgba(201,162,39,0.3); }
+  .acao-image { width: 100%; height: 220px; object-fit: cover; display: block; }
+  .acao-content { padding: 22px 20px 24px; }
+  .acao-title { font-family: 'Cinzel', serif; font-size: 1rem; font-weight: 700; color: var(--gold); margin-bottom: 10px; }
+  .acao-body { font-size: 0.92rem; line-height: 1.75; color: rgba(245,240,232,0.62); }
+
   /* INGRESSO */
   #ingresso { background: linear-gradient(to bottom, transparent, rgba(107,0,0,0.06), transparent); }
 
@@ -540,16 +554,17 @@
 </head>
 <body>
 
-<canvas id="matrix-canvas"></canvas>
+<!-- <canvas id="matrix-canvas"></canvas> -->
 
 <nav>
   <div class="nav-logo">DEMOLAY BRASIL / GCESP - Cavaleiros da Terra Rasgada nº1112</div>
   <ul class="nav-links">
-    <li><a href="#oque">A Ordem</a></li>
+    <li><a href="#oque">Sobre a Ordem</a></li>
     <li><a href="#objetivo">Missão</a></li>
     <li><a href="#baluartes">Valores</a></li>
     <li><a href="#historia">História</a></li>
     <li><a href="#como-funciona">Vivência</a></li>
+    <li><a href="#acoes">Ações</a></li>
     <li><a href="#ingresso">Ingresso</a></li>
     <li><a href="#contato">Contato</a></li>
     <li><a href="#faq">FAQ</a></li>
@@ -562,14 +577,14 @@
   <div class="hero-content">
     <p class="hero-eyebrow">Cavaleiros da Terra Rasgada nº1112</p>
     <h1 class="hero-title">
-      Ordem<br><span class="gold">DeMolay</span>
+      Capítulo Cavaleiros da Terra Rasgada nº1112<br><span class="gold">Ordem DeMolay Brasil</span>
     </h1>
     <p class="hero-subtitle">
-      Uma organização para jovens que buscam crescer com caráter, formar amizades verdadeiras e se preparar para os desafios do mundo.
+      Uma organização dedicada ao desenvolvimento de jovens líderes através de princípios fraternos e valores éticos.
     </p>
     <div class="hero-cta-row">
-      <a href="#oque" class="btn-primary">Conheça a Ordem</a>
-      <a href="#contato" class="btn-outline">Quero Participar</a>
+      <a href="#oque" class="btn-primary">Saiba Mais sobre a Ordem</a>
+      <a href="#contato" class="btn-outline">Como Participar</a>
     </div>
   </div>
   <div class="scroll-indicator">
@@ -584,9 +599,9 @@
   <div class="two-col">
     <div>
       <p class="section-label reveal"># 01 — O que é</p>
-      <h2 class="section-title reveal">Uma <em>escola de líderes</em> para jovens</h2>
-      <p class="section-body reveal">A Ordem DeMolay é uma organização fraternal voltada para jovens do sexo masculino entre 12 e 21 anos. Fundada nos EUA em 1919 e presente no Brasil desde 1980, ela impactou a vida de milhares de jovens, ajudando-os a se tornarem homens mais conscientes, responsáveis e comprometidos com o bem.</p>
-      <p class="section-body reveal" style="margin-top: 18px;">Mais do que um clube, é um espaço onde o jovem aprende vivendo — por meio de cerimônias, projetos sociais, debates e experiências que desenvolvem caráter e preparam para a vida adulta. Cada unidade local, chamada de <strong style="color:var(--gold)">Capítulo</strong>, é conduzida pelos próprios jovens.</p>
+      <h2 class="section-title reveal">Uma organização para o <em>desenvolvimento de jovens líderes</em></h2>
+      <p class="section-body reveal">A Ordem DeMolay é uma organização fraternal destinada a jovens do sexo masculino com idade entre 12 e 21 anos. Fundada nos Estados Unidos em 1919 e estabelecida no Brasil em 1980, a Ordem tem contribuído para o desenvolvimento de milhares de jovens, promovendo valores de responsabilidade, ética e compromisso social.</p>
+      <p class="section-body reveal" style="margin-top: 18px;">Além de uma organização juvenil, a Ordem oferece um ambiente de aprendizado prático através de cerimônias rituais, iniciativas sociais, discussões e atividades que fortalecem o caráter e preparam os jovens para os desafios da vida adulta. Cada unidade local, chamada de <strong style="color:var(--gold)">Capítulo</strong>, é administrada pelos próprios membros jovens.</p>
       <div class="highlight-quote reveal">
         "Habilidade e personalidade podem abrir portas, mas é o caráter que as mantém abertas."
         <cite>— Frank Sherman Land · Fundador da Ordem DeMolay</cite>
@@ -785,7 +800,7 @@
 <!-- VIRTUDES -->
 <div class="section-wrap">
 <section id="virtudes">
-  <p class="section-label reveal"># 06 — As sete virtudes</p>
+  <p class="section-label reveal"># 07 — As sete virtudes</p>
   <h2 class="section-title reveal">Virtudes que <em>guiam</em> cada DeMolay</h2>
   <p class="section-body reveal">Além dos baluartes, sete virtudes formam o núcleo da identidade de todo membro, sendo trabalhadas e vivenciadas a cada reunião, projeto e cerimônia.</p>
   <div class="virtudes-grid">
@@ -844,10 +859,44 @@
 
 <div class="divider"></div>
 
+<!-- AÇÕES -->
+<div class="section-wrap">
+<section id="acoes">
+  <p class="section-label reveal"># 06 — Ações e registros</p>
+  <h2 class="section-title reveal">Algumas ações que <em>já realizamos</em></h2>
+  <p class="section-body reveal">Ao longo do tempo, o capítulo tem se dedicado a iniciativas que unem serviço, fraternidade e formação para a comunidade.</p>
+  <div class="acoes-grid">
+    <article class="acao-card reveal">
+      <img class="acao-image" src="feijoada.jpeg" alt="Feijoada beneficente do capítulo">
+      <div class="acao-content">
+        <h3 class="acao-title">Feijoada Beneficente</h3>
+        <p class="acao-body">O Capítulo realizou a sua primeira feijoada beneficente, na qual estiveram presentes cerca de 600 pessoas. Foi doado cerca de R$ 18.000,00 para o Asilo local, e esse evento foi o maior da 32º Região, tanto em escala quanto em filantropia.</p>
+      </div>
+    </article>
+    <article class="acao-card reveal">
+      <img class="acao-image" src="futebol.jpeg" alt="Futebol solidário do capítulo">
+      <div class="acao-content">
+        <h3 class="acao-title">Futebol Solidário</h3>
+        <p class="acao-body">Futebol beneficente realizado pelo Capítulo, onde o ingresso do jogo seria a doação de uma caixa de bombom.</p>
+      </div>
+    </article>
+    <article class="acao-card reveal">
+      <img class="acao-image" src="doacao_bombom.jpeg" alt="Doação de caixas de bombom do capítulo">
+      <div class="acao-content">
+        <h3 class="acao-title">Doação de Caixas de Bombom</h3>
+        <p class="acao-body">Doação de caixas de bombom, onde arrecadamos cerca de 130 unidades, deixando a Páscoa de crianças carentes mais feliz e especial.</p>
+      </div>
+    </article>
+  </div>
+</section>
+</div>
+
+<div class="divider"></div>
+
 <!-- INGRESSO -->
 <div class="section-wrap">
 <section id="ingresso">
-  <p class="section-label reveal"># 07 — Como participar</p>
+  <p class="section-label reveal"># 08 — Como participar</p>
   <h2 class="section-title reveal">O caminho para se <em>tornar um DeMolay</em></h2>
   <p class="section-body reveal">O processo é estruturado para garantir que cada candidato entre com consciência, comprometimento e valores alinhados com os princípios da Ordem.</p>
   <div class="steps-row">
@@ -885,7 +934,7 @@
 <!-- CONTATO -->
 <div class="section-wrap">
 <section id="contato">
-  <p class="section-label reveal"># 08 — Dados de contato</p>
+  <p class="section-label reveal"># 09 — Dados de contato</p>
   <h2 class="section-title reveal">Entre em <em>contato</em> conosco</h2>
   <p class="section-body reveal">Para mais informações sobre o Capítulo Cavaleiros da Terra Rasgada nº1112, entre em contato com nossos líderes.</p>
   <div style="margin-top: 52px; display: flex; flex-direction: column; gap: 20px;">
@@ -910,7 +959,7 @@
 <!-- FAQ -->
 <div class="section-wrap">
 <section id="faq">
-  <p class="section-label reveal"># 09 — Dúvidas</p>
+  <p class="section-label reveal"># 10 — Dúvidas</p>
   <h2 class="section-title reveal">Perguntas <em>frequentes</em></h2>
   <div class="faq-list reveal">
     <div class="faq-item">
@@ -946,7 +995,7 @@
 </div>
 
 <footer>
-  <p class="footer-logo">DEMOLAY BRASIL</p>
+  <p class="footer-logo">CTR SOROCABA</p>
   <p class="footer-text">
     <a href="https://www.demolay.org.br" target="_blank">www.demolay.org.br</a> <a href="https://www.instagram.com/ctr.sorocaba/" target="_blank">@ctr.sorocaba</a>
   </p>
@@ -955,37 +1004,44 @@
 <script>
   // MATRIX RAIN
   const canvas = document.getElementById('matrix-canvas');
-  const ctx = canvas.getContext('2d');
-  function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-  resizeCanvas();
-  window.addEventListener('resize', resizeCanvas);
-  const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノ';
-  const fontSize = 14;
-  let drops = Array(Math.floor(canvas.width / fontSize)).fill(1);
-  function drawMatrix() {
-    ctx.fillStyle = 'rgba(5,5,5,0.05)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.font = `${fontSize}px 'Share Tech Mono', monospace`;
-    for (let i = 0; i < drops.length; i++) {
-      const text = chars[Math.floor(Math.random() * chars.length)];
-      ctx.fillStyle = Math.random() > 0.95 ? '#c9a227' : '#c0120c';
-      ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
-      drops[i]++;
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノ';
+    const fontSize = 14;
+    let drops = Array(Math.floor(canvas.width / fontSize)).fill(1);
+    function drawMatrix() {
+      ctx.fillStyle = 'rgba(5,5,5,0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.font = `${fontSize}px 'Share Tech Mono', monospace`;
+      for (let i = 0; i < drops.length; i++) {
+        const text = chars[Math.floor(Math.random() * chars.length)];
+        ctx.fillStyle = Math.random() > 0.95 ? '#c9a227' : '#c0120c';
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+      }
     }
+    setInterval(drawMatrix, 60);
   }
-  setInterval(drawMatrix, 60);
 
   // SCROLL REVEAL
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry, i) => {
-      if (entry.isIntersecting) {
-        setTimeout(() => entry.target.classList.add('visible'), i * 70);
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.1 });
-  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  const revealElements = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('visible'), i * 70);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    revealElements.forEach(el => observer.observe(el));
+  } else {
+    revealElements.forEach(el => el.classList.add('visible'));
+  }
 
   // FAQ
   function toggleFaq(btn) {
