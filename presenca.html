@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CTR | Presença</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  </head>
+  <body>
+    <main class="container">
+      <header class="page-header">
+        <div>
+          <h1 class="header-title">Controle de presença</h1>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+          <button class="secondary-btn" type="button" onclick="window.location.href='perfil.html'">Voltar</button>
+          <button class="secondary-btn" type="button" onclick="logout()">Sair</button>
+        </div>
+      </header>
+
+      <section class="card profile-card">
+        <h2 id="userName">Carregando...</h2>
+        <p class="subtitle" id="presenceSummary">Preparando pedido de presença...</p>
+
+        <div id="eventSelection" style="margin: 18px 0;">
+          <h3>Escolha a reunião</h3>
+          <p class="subtitle" style="margin-bottom: 12px;">Selecione uma reunião cadastrada no calendário para solicitar sua presença.</p>
+          <div id="presenceEvents" style="display: grid; gap: 10px;"></div>
+        </div>
+
+        <div style="display: grid; place-items: center; margin: 18px 0;">
+          <div id="qrContainer" style="padding: 18px; background: white; border-radius: 18px; display: inline-block; min-width: 220px; min-height: 220px; display: grid; place-items: center;"></div>
+        </div>
+
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px;">
+          <button id="generateQrBtn" class="primary-btn" type="button" style="width: auto;">Gerar QR de presença</button>
+          <button id="sendRequestBtn" class="secondary-btn" type="button" style="width: auto;">Enviar pedido para aprovação</button>
+        </div>
+
+        <div style="margin-top: 18px;">
+          <a href="painel-presenca.html" class="secondary-btn" style="display: inline-block; width: auto; text-decoration: none;">Abrir painel de presença</a>
+        </div>
+
+        <p id="presenceMessage" class="message" aria-live="polite"></p>
+      </section>
+
+      <section id="memberHistory" class="card admin-panel" hidden>
+        <h2>Meu histórico de solicitações</h2>
+        <div id="memberHistoryList" aria-live="polite"></div>
+      </section>
+
+      <section id="adminRequests" class="card admin-panel" hidden>
+        <h2>Solicitações para aprovação</h2>
+        <div id="adminRequestsList"></div>
+      </section>
+    </main>
+
+    <script src="roles.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const currentUser = requireAuth();
+        if (!currentUser) return;
+
+        const userName = document.getElementById('userName');
+        const presenceSummary = document.getElementById('presenceSummary');
+        const eventSelection = document.getElementById('eventSelection');
+        const presenceEvents = document.getElementById('presenceEvents');
+        const qrContainer = document.getElementById('qrContainer');
+        const generateQrBtn = document.getElementById('generateQrBtn');
+        const sendRequestBtn = document.getElementById('sendRequestBtn');
+        const presenceMessage = document.getElementById('presenceMessage');
+        const memberHistory = document.getElementById('memberHistory');
+        const memberHistoryList = document.getElementById('memberHistoryList');
+        const adminRequests = document.getElementById('adminRequests');
+        const adminRequestsList = document.getElementById('adminRequestsList');
+
+        const usuarioEhAdmin = isAdmin(currentUser);
+
+        const events = getCalendarEvents()
+          .filter((event) => event.id && event.titulo)
+          .slice()
+          .sort((a, b) => {
+            const dateA = getEventDateTimeValue(a);
+            const dateB = getEventDateTimeValue(b);
+            return (dateA ? dateA.getTime() : 0) - (dateB ? dateB.getTime() : 0);
+          });
+        const defaultEvent = getNearestEventForRequest() || {
+          id: DEFAULT_PRESENCE_EVENT_ID,
+          titulo: 'Reunião Geral',
+          data: '2026-11-20',
+          hora: '19:00'
+        };
+        let selectedEventId = usuarioEhAdmin ? (defaultEvent.id || DEFAULT_PRESENCE_EVENT_ID) : null;
+
+        userName.textContent = currentUser.nome;
+        presenceSummary.textContent = usuarioEhAdmin
+          ? 'Como administrador, você pode aprovar ou rejeitar solicitações de presença.'
+          : 'Escolha uma reunião do calendário para gerar o QR code e enviar seu pedido de aprovação.';
+
+        if (usuarioEhAdmin) {
+          eventSelection.hidden = true;
+          generateQrBtn.disabled = true;
+          sendRequestBtn.disabled = true;
+        } else if (events.length === 0) {
+          presenceEvents.textContent = 'Nenhuma reunião cadastrada no calendário.';
+          generateQrBtn.disabled = true;
+          sendRequestBtn.disabled = true;
+        } else {
+          events.forEach((event) => {
+            const eventButton = document.createElement('button');
+            const title = document.createElement('strong');
+            const date = document.createElement('span');
+            const eventDate = getEventDateTimeValue(event);
+
+            eventButton.type = 'button';
+            eventButton.className = 'secondary-btn';
+            eventButton.style.width = '100%';
+            eventButton.style.justifyContent = 'space-between';
+            eventButton.style.gap = '12px';
+            eventButton.setAttribute('aria-pressed', 'false');
+            eventButton.dataset.eventId = String(event.id);
+
+            title.textContent = event.titulo;
+            date.textContent = eventDate
+              ? eventDate.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+              : 'Data não informada';
+            eventButton.append(title, date);
+            presenceEvents.appendChild(eventButton);
+
+            eventButton.addEventListener('click', () => {
+              selectedEventId = event.id;
+              presenceEvents.querySelectorAll('[data-event-id]').forEach((button) => {
+                const isSelected = button.dataset.eventId === String(selectedEventId);
+                button.setAttribute('aria-pressed', String(isSelected));
+                button.classList.toggle('primary-btn', isSelected);
+                button.classList.toggle('secondary-btn', !isSelected);
+              });
+
+              generateQrBtn.disabled = false;
+              sendRequestBtn.disabled = false;
+              presenceSummary.textContent = `Reunião selecionada: ${event.titulo}. Mostre o QR code para a administração ou envie o pedido para aprovação.`;
+              renderQr(generatePresencePayload(currentUser, selectedEventId));
+              presenceMessage.textContent = '';
+            });
+          });
+
+          generateQrBtn.disabled = true;
+          sendRequestBtn.disabled = true;
+          qrContainer.textContent = 'Selecione uma reunião para gerar o QR code.';
+        }
+
+        function renderQr(payload) {
+          qrContainer.innerHTML = '';
+          if (window.QRCode) {
+            new QRCode(qrContainer, {
+              text: payload.replace(/[^\x00-\x7F]/g, (character) => `\\u${character.charCodeAt(0).toString(16).padStart(4, '0')}`),
+              width: 220,
+              height: 220,
+              correctLevel: QRCode.CorrectLevel.M
+            });
+          } else {
+            qrContainer.textContent = 'Biblioteca do QR Code não carregou.';
+          }
+        }
+
+        function renderAdminRequests() {
+          if (!isAdmin) return;
+
+          adminRequests.hidden = false;
+          const requests = getPendingPresenceRequests();
+
+          if (requests.length === 0) {
+            adminRequestsList.innerHTML = '<p class="subtitle">Nenhuma solicitação pendente no momento.</p>';
+            return;
+          }
+
+          adminRequestsList.innerHTML = requests.map((request) => {
+            const titulo = request.eventoTitulo || 'Reunião não informada';
+            const eventDate = request.eventoData ? (request.eventoData.includes('T') ? request.eventoData : `${request.eventoData}T${request.eventoHora || '19:00'}`) : null;
+            const data = eventDate ? new Date(eventDate).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Data não informada';
+
+            return `
+              <div class="card" style="padding: 16px; margin-bottom: 14px; background: rgba(255,255,255,0.02);">
+                <strong>${request.nome}</strong> (ID ${request.membroId})<br>
+                <small>${new Date(request.data).toLocaleString('pt-BR')}</small>
+                <p class="subtitle" style="margin: 10px 0 0;">
+                  <strong>Reunião:</strong> ${titulo}<br>
+                  <strong>Data:</strong> ${data}
+                </p>
+                <div style="display:flex; gap:10px; margin-top: 12px; flex-wrap: wrap;">
+                  <button class="primary-btn" type="button" data-request-id="${request.id}" data-action="aprovada" style="width:auto;">Aprovar</button>
+                  <button class="secondary-btn" type="button" data-request-id="${request.id}" data-action="rejeitada" style="width:auto;">Rejeitar</button>
+                </div>
+              </div>
+            `;
+          }).join('');
+
+          adminRequestsList.querySelectorAll('[data-action]').forEach((button) => {
+            button.addEventListener('click', () => {
+              const requestId = button.getAttribute('data-request-id');
+              const action = button.getAttribute('data-action');
+              const ok = updatePresenceRequestStatus(requestId, action, currentUser);
+              if (ok) {
+                renderAdminRequests();
+              }
+            });
+          });
+        }
+
+        function renderMemberHistory() {
+          if (usuarioEhAdmin) return;
+
+          memberHistory.hidden = false;
+          const requests = getPresenceRequestsForMember(currentUser.id);
+          memberHistoryList.replaceChildren();
+
+          if (requests.length === 0) {
+            const emptyMessage = document.createElement('p');
+            emptyMessage.className = 'subtitle';
+            emptyMessage.textContent = 'Você ainda não enviou solicitações de presença.';
+            memberHistoryList.appendChild(emptyMessage);
+            return;
+          }
+
+          requests.forEach((request) => {
+            const item = document.createElement('div');
+            const title = document.createElement('strong');
+            const details = document.createElement('p');
+            const submittedAt = new Date(request.data);
+            const eventDateValue = request.eventoData
+              ? (request.eventoData.includes('T') ? request.eventoData : `${request.eventoData}T${request.eventoHora || '19:00'}`)
+              : null;
+            const eventDate = eventDateValue ? new Date(eventDateValue) : null;
+            const formattedEventDate = eventDate && !Number.isNaN(eventDate.getTime())
+              ? eventDate.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+              : 'Data não informada';
+            const formattedSubmissionDate = !Number.isNaN(submittedAt.getTime())
+              ? submittedAt.toLocaleString('pt-BR')
+              : 'Data não informada';
+            const decisionDate = request.dataAprovacao ? new Date(request.dataAprovacao) : null;
+            const status = {
+              pendente: 'Pendente',
+              aprovada: 'Aprovada',
+              rejeitada: 'Rejeitada'
+            }[request.status] || 'Status desconhecido';
+            const detailsText = [
+              `Data da reunião: ${formattedEventDate}`,
+              `Status: ${status}`,
+              `Pedido enviado: ${formattedSubmissionDate}`
+            ];
+
+            if (request.aprovadoPor) {
+              detailsText.push(`Decidido por: ${request.aprovadoPor}`);
+            }
+            if (decisionDate && !Number.isNaN(decisionDate.getTime())) {
+              detailsText.push(`Decisão em: ${decisionDate.toLocaleString('pt-BR')}`);
+            }
+
+            item.className = 'card';
+            item.style.padding = '16px';
+            item.style.marginBottom = '12px';
+            item.style.background = 'rgba(255,255,255,0.02)';
+            title.textContent = request.eventoTitulo || 'Reunião não informada';
+            details.className = 'subtitle';
+            details.style.margin = '8px 0 0';
+            details.textContent = detailsText.join(' · ');
+            item.append(title, details);
+            memberHistoryList.appendChild(item);
+          });
+        }
+
+        generateQrBtn.addEventListener('click', () => {
+          if (!selectedEventId) return;
+          renderQr(generatePresencePayload(currentUser, selectedEventId));
+          presenceMessage.textContent = 'QR code gerado com sucesso.';
+        });
+
+        sendRequestBtn.addEventListener('click', () => {
+          if (!selectedEventId) {
+            presenceMessage.textContent = 'Selecione uma reunião do calendário antes de enviar o pedido.';
+            return;
+          }
+
+          const created = createPresenceRequest(currentUser.id, currentUser.nome, selectedEventId);
+          if (!created) {
+            presenceMessage.textContent = 'Você já possui um pedido pendente para esta reunião.';
+            renderMemberHistory();
+            return;
+          }
+
+          const requestDateValue = created.eventoData && created.eventoData.includes('T') ? created.eventoData : `${created.eventoData || '2026-11-20'}T${created.eventoHora || '19:00'}`;
+          presenceMessage.textContent = `Pedido enviado para aprovação. Reunião: ${created.eventoTitulo || 'Não selecionada'} (${new Date(requestDateValue).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}). Código: ${created.id.slice(-6)}`;
+          renderMemberHistory();
+        });
+
+        if (usuarioEhAdmin) {
+          renderAdminRequests();
+          generateQrBtn.hidden = true;
+          sendRequestBtn.hidden = true;
+          renderQr(generatePresencePayload(currentUser, selectedEventId));
+        } else {
+          renderMemberHistory();
+        }
+
+        window.addEventListener('storage', (event) => {
+          if (event.key !== 'ctr_presence_requests') return;
+
+          if (usuarioEhAdmin) {
+            renderAdminRequests();
+          } else {
+            renderMemberHistory();
+          }
+        });
+
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState !== 'visible') return;
+
+          if (usuarioEhAdmin) {
+            renderAdminRequests();
+          } else {
+            renderMemberHistory();
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

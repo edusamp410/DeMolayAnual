@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CTR | Membros</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header class="page-header">
+        <div>
+          <h1 id="pageTitle" class="header-title">Membros</h1>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+          <span id="roleBadge" class="badge">membro</span>
+          <button class="secondary-btn" type="button" onclick="window.location.href='perfil.html'">Voltar</button>
+          <button class="secondary-btn" type="button" onclick="logout()">Sair</button>
+        </div>
+      </header>
+
+      <section class="card profile-card">
+        <h2 id="userName">Carregando...</h2>
+        <p id="pageSummary" class="subtitle">Carregando lista de membros...</p>
+      </section>
+
+      <section class="card admin-panel">
+        <h2>Lista de membros</h2>
+        <p class="subtitle">Visualize os integrantes do sistema e, se for administrador, altere perfis.</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Usuário</th>
+                <th>Perfil</th>
+                <th>Ação</th>
+              </tr>
+            </thead>
+            <tbody id="membersTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script src="roles.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const currentUser = requireAuth();
+        if (!currentUser) return;
+
+        const roleBadge = document.getElementById('roleBadge');
+        const userName = document.getElementById('userName');
+        const pageSummary = document.getElementById('pageSummary');
+        const membersTableBody = document.getElementById('membersTableBody');
+
+        const usuarioEhAdmin = isAdmin(currentUser);
+        roleBadge.textContent = currentUser.papel;
+        roleBadge.classList.toggle('admin', usuarioEhAdmin);
+
+        userName.textContent = currentUser.nome;
+        pageSummary.textContent = usuarioEhAdmin
+          ? 'Você pode visualizar e gerenciar todos os membros do sistema.'
+          : 'Você pode visualizar a lista de membros cadastrados.';
+
+        const users = getUsers();
+
+        if (!users.length) {
+          membersTableBody.innerHTML = '<tr><td colspan="4" class="empty-state">Nenhum membro encontrado.</td></tr>';
+          return;
+        }
+
+        membersTableBody.innerHTML = users
+          .map((user) => {
+            const optionList = ['membro', 'administrador']
+              .map((papel) => `<option value="${papel}" ${user.papel === papel ? 'selected' : ''}>${papel}</option>`)
+              .join('');
+
+            return `
+              <tr>
+                <td>${user.id}</td>
+                <td>${user.nome}</td>
+                <td>
+                  ${usuarioEhAdmin
+                    ? `<select class="role-select" data-user-id="${user.id}" aria-label="Selecionar papel para ${user.nome}">
+                        ${optionList}
+                      </select>`
+                    : user.papel}
+                </td>
+                <td>
+                  ${Number(user.id) === Number(currentUser.id) ? 'Você' : (usuarioEhAdmin ? '<span style="color: #aef0b7;">Disponível</span>' : '-')}
+                </td>
+              </tr>
+            `;
+          })
+          .join('');
+
+        if (usuarioEhAdmin) {
+          document.querySelectorAll('.role-select').forEach((select) => {
+            select.addEventListener('change', (event) => {
+              const targetId = event.target.dataset.userId;
+              const nextRole = event.target.value;
+
+              if (Number(targetId) === Number(currentUser.id) && nextRole !== 'administrador') {
+                alert('Você não pode remover seu próprio acesso administrativo.');
+                event.target.value = currentUser.papel;
+                return;
+              }
+
+              const ok = updateUserRole(targetId, nextRole);
+
+              if (!ok) {
+                alert('Não foi possível atualizar o perfil.');
+                event.target.value = getUsers().find((item) => Number(item.id) === Number(targetId))?.papel || currentUser.papel;
+                return;
+              }
+
+              const updatedUser = getUsers().find((item) => Number(item.id) === Number(targetId));
+              if (updatedUser && Number(updatedUser.id) === Number(currentUser.id)) {
+                currentUser.papel = updatedUser.papel;
+                setSession(currentUser);
+              }
+
+              window.location.reload();
+            });
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CTR | Perfil</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header class="page-header">
+        <div>
+          <h1 id="pageTitle" class="header-title">Página inicial</h1>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+          <span id="roleBadge" class="badge">membro</span>
+          <button class="secondary-btn" type="button" onclick="logout()">Sair</button>
+        </div>
+      </header>
+
+      <section class="dashboard-grid">
+        <a href="cerimonias-publicas.html" class="dashboard-card">
+          <div class="dashboard-card-header">
+            <div class="dashboard-icon">🏛️</div>
+            <h3>Cerimônias Públicas</h3>
+          </div>
+          <p>Confira avisos, materiais e eventos públicos da Ordem.</p>
+          <div class="meta">Abrir</div>
+        </a>
+
+        <a href="calendario.html" class="dashboard-card">
+          <div class="dashboard-card-header">
+            <div class="dashboard-icon">📅</div>
+            <h3>Calendário</h3>
+          </div>
+          <p>Visualize compromissos, reuniões e datas oficiais.</p>
+          <div class="meta">Abrir</div>
+        </a>
+
+        <a href="presenca.html" class="dashboard-card">
+          <div class="dashboard-card-header">
+            <div class="dashboard-icon">✅</div>
+            <h3>Controle de Presença</h3>
+          </div>
+          <p>Solicite confirmação de presença pelo QR code.</p>
+          <div class="meta">Abrir</div>
+        </a>
+
+        <a href="membros.html" class="dashboard-card">
+          <div class="dashboard-card-header">
+            <div class="dashboard-icon">👥</div>
+            <h3>Membros</h3>
+          </div>
+          <p>Veja a lista de membros e o perfil de cada participante.</p>
+          <div class="meta">Abrir</div>
+        </a>
+
+        <a href="meu-perfil.html" class="dashboard-card">
+          <div class="dashboard-card-header">
+            <div class="dashboard-icon">👤</div>
+            <h3>Meu perfil</h3>
+          </div>
+          <p>Visualize seus dados pessoais, ID e papel no sistema.</p>
+          <div class="meta">Abrir</div>
+        </a>
+      </section>
+    </main>
+
+    <script src="roles.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const currentUser = requireAuth();
+        if (!currentUser) return;
+
+        const roleBadge = document.getElementById('roleBadge');
+        const pageTitle = document.getElementById('pageTitle');
+
+        const usuarioEhAdmin = isAdmin(currentUser);
+        roleBadge.textContent = currentUser.papel;
+        roleBadge.classList.toggle('admin', usuarioEhAdmin);
+        pageTitle.textContent = usuarioEhAdmin ? 'Página inicial' : 'Página inicial';
+      });
+    </script>
+  </body>
+</html>

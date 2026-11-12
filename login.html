@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CTR | Login</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="auth-shell">
+      <section class="card auth-box">
+        <h1 class="title">Entrar</h1>
+        <p class="subtitle">Use o ID do membro e sua senha para acessar o painel.</p>
+
+        <div id="demoWarning" class="demo-box" hidden>
+          Este protótipo guarda contas e dados somente neste navegador. Não use dados reais de membros nem esta autenticação em produção.
+        </div>
+
+        <form id="initialAdminForm" hidden>
+          <h2>Configurar administrador inicial</h2>
+          <p class="subtitle">Crie a primeira conta para este navegador.</p>
+          <div class="form-group">
+            <label for="adminId">ID do administrador</label>
+            <input id="adminId" name="adminId" type="number" min="1" step="1" required />
+          </div>
+          <div class="form-group">
+            <label for="adminName">Nome</label>
+            <input id="adminName" name="adminName" type="text" maxlength="100" required />
+          </div>
+          <div class="form-group">
+            <label for="adminPassword">Senha (mínimo 12 caracteres)</label>
+            <input id="adminPassword" name="adminPassword" type="password" minlength="12" autocomplete="new-password" required />
+          </div>
+          <div class="form-group">
+            <label for="adminPasswordConfirm">Confirme a senha</label>
+            <input id="adminPasswordConfirm" name="adminPasswordConfirm" type="password" minlength="12" autocomplete="new-password" required />
+          </div>
+          <button type="submit" class="primary-btn">Criar administrador</button>
+          <div id="setupMessage" class="message" aria-live="polite"></div>
+        </form>
+
+        <form id="loginForm" hidden>
+          <div class="form-group">
+            <label for="id">ID do membro</label>
+            <input id="id" name="id" type="number" placeholder="Ex.: 1001" required />
+          </div>
+
+          <div class="form-group">
+            <label for="senha">Senha</label>
+            <input id="senha" name="senha" type="password" placeholder="Digite sua senha" required />
+          </div>
+
+          <button type="submit" class="primary-btn">Acessar painel</button>
+          <div id="message" class="message" aria-live="polite"></div>
+        </form>
+
+      </section>
+    </main>
+
+    <script src="roles.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        localStorage.removeItem(SESSION_KEY);
+        const users = seedUsers();
+
+        const loginForm = document.getElementById('loginForm');
+        const initialAdminForm = document.getElementById('initialAdminForm');
+        const demoWarning = document.getElementById('demoWarning');
+        const message = document.getElementById('message');
+        const setupMessage = document.getElementById('setupMessage');
+        const isFirstRun = users.length === 0;
+
+        initialAdminForm.hidden = !isFirstRun;
+        loginForm.hidden = isFirstRun;
+        demoWarning.hidden = false;
+
+        initialAdminForm.addEventListener('submit', (event) => {
+          event.preventDefault();
+
+          const password = document.getElementById('adminPassword').value;
+          const passwordConfirm = document.getElementById('adminPasswordConfirm').value;
+          if (password !== passwordConfirm) {
+            setupMessage.textContent = 'As senhas não coincidem.';
+            return;
+          }
+
+          const user = createInitialAdmin(
+            document.getElementById('adminId').value,
+            document.getElementById('adminName').value,
+            password
+          );
+          if (!user) {
+            setupMessage.textContent = 'Não foi possível criar a conta. A configuração inicial pode já ter sido concluída.';
+            return;
+          }
+
+          window.location.href = 'perfil.html';
+        });
+
+        loginForm.addEventListener('submit', (event) => {
+          event.preventDefault();
+
+          const id = document.getElementById('id').value.trim();
+          const senha = document.getElementById('senha').value;
+
+          const user = login(id, senha);
+
+          if (!user) {
+            message.textContent = 'ID ou senha inválidos.';
+            return;
+          }
+
+          message.textContent = 'Login realizado com sucesso.';
+          window.location.href = 'perfil.html';
+        });
+      });
+    </script>
+  </body>
+</html>

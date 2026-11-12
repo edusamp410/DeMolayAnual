@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CTR | Calendário</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header class="page-header">
+        <div>
+          <h1 class="header-title">Calendário</h1>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+          <span id="roleBadge" class="badge">membro</span>
+          <button class="secondary-btn" type="button" onclick="window.location.href='perfil.html'">Voltar</button>
+          <button class="secondary-btn" type="button" onclick="logout()">Sair</button>
+        </div>
+      </header>
+
+      <section class="card profile-card">
+        <h2 id="userName">Carregando...</h2>
+        <p class="subtitle">Todos podem visualizar. Somente administradores podem alterar.</p>
+      </section>
+
+      <section class="card admin-panel">
+        <div id="calendarEvents"></div>
+        <div id="eventDetail" style="margin-top: 18px;"></div>
+
+        <div id="calendarAdminControls" style="display: none; margin-top: 24px;">
+          <h3>Adicionar evento</h3>
+          <div class="form-group">
+            <label for="eventTitle">Título</label>
+            <input id="eventTitle" type="text" placeholder="Ex.: Reunião geral" />
+          </div>
+          <div class="form-group">
+            <label for="eventDate">Data</label>
+            <input id="eventDate" type="date" />
+          </div>
+          <div class="form-group">
+            <label for="eventTime">Hora</label>
+            <input id="eventTime" type="time" value="19:00" />
+          </div>
+          <button id="addEventBtn" class="primary-btn" type="button" style="width: auto;">Adicionar evento</button>
+        </div>
+      </section>
+    </main>
+
+    <script src="roles.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const currentUser = requireAuth();
+        if (!currentUser) return;
+
+        const roleBadge = document.getElementById('roleBadge');
+        const userName = document.getElementById('userName');
+        const calendarEvents = document.getElementById('calendarEvents');
+        const calendarAdminControls = document.getElementById('calendarAdminControls');
+        const usuarioEhAdmin = isAdmin(currentUser);
+
+        roleBadge.textContent = currentUser.papel;
+        roleBadge.classList.toggle('admin', usuarioEhAdmin);
+        userName.textContent = currentUser.nome;
+
+        seedCalendarAndCeremonies();
+
+        function formatEventDate(event) {
+          const dateValue = event.dataHora || (event.data && event.hora ? `${event.data}T${event.hora}` : event.data);
+          if (!dateValue) return 'Data não informada';
+
+          const date = new Date(dateValue.includes('T') ? dateValue : `${dateValue}T${event.hora || '00:00'}`);
+          return date.toLocaleString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+        }
+
+        function renderEventDetails(eventId) {
+          const event = getCalendarEvents().find(item => item.id === eventId);
+          if (!event) return;
+
+          const summary = getPresenceSummaryForEvent(eventId);
+          const detail = document.getElementById('eventDetail');
+
+          detail.innerHTML = `
+            <div class="card" style="padding: 20px; background: rgba(255,255,255,0.02);">
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px;">
+                <div>
+                  <strong style="font-size: 1.2rem;">${event.titulo}</strong><br>
+                  <small>${formatEventDate(event)}</small>
+                </div>
+                <button class="secondary-btn" type="button" data-close-event-detail="true" style="width: auto;">Fechar</button>
+              </div>
+
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 12px;">
+                <div>
+                  <h3>Presentes</h3>
+                  ${summary.presentes.length ? summary.presentes.map((item) => `<div style="padding: 6px 0;">• ${item.nome} (ID ${item.id})</div>`).join('') : '<p class="subtitle">Nenhum presente confirmado.</p>'}
+                </div>
+                <div>
+                  <h3>Ausentes</h3>
+                  ${summary.ausentes.length ? summary.ausentes.map((item) => `<div style="padding: 6px 0;">• ${item.nome} (ID ${item.id})</div>`).join('') : '<p class="subtitle">Nenhum ausente.</p>'}
+                </div>
+              </div>
+            </div>
+          `;
+
+          const closeBtn = detail.querySelector('[data-close-event-detail]');
+          if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+              detail.innerHTML = '';
+            });
+          }
+        }
+
+        function renderCalendar() {
+          const events = getCalendarEvents().slice().sort((a, b) => {
+            const dateA = new Date(a.dataHora || `${a.data || '2026-11-20'}T${a.hora || '19:00'}`);
+            const dateB = new Date(b.dataHora || `${b.data || '2026-11-20'}T${b.hora || '19:00'}`);
+            return dateA - dateB;
+          });
+
+          if (!events.length) {
+            calendarEvents.innerHTML = '<p class="subtitle">Nenhum evento agendado.</p>';
+            return;
+          }
+
+          calendarEvents.innerHTML = events.map((event) => `
+            <div class="card" data-event-id="${event.id}" style="padding: 16px; margin-bottom: 12px; background: rgba(255,255,255,0.02); cursor: pointer;">
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+                <div>
+                  <strong>${event.titulo}</strong><br>
+                  <small>${formatEventDate(event)}</small>
+                </div>
+                ${usuarioEhAdmin ? `<button class="secondary-btn" type="button" data-remove-event="${event.id}" style="width: auto;">Excluir</button>` : ''}
+              </div>
+            </div>
+          `).join('');
+
+          calendarEvents.querySelectorAll('[data-event-id]').forEach((card) => {
+            card.addEventListener('click', (event) => {
+              if (event.target.closest('[data-remove-event]')) return;
+              localStorage.setItem('selectedEventId', card.dataset.eventId);
+              renderEventDetails(card.dataset.eventId);
+            });
+          });
+
+          calendarEvents.querySelectorAll('[data-remove-event]').forEach((button) => {
+            button.addEventListener('click', (event) => {
+              event.stopPropagation();
+              const eventId = button.getAttribute('data-remove-event');
+              removeCalendarEvent(eventId);
+              renderCalendar();
+              document.getElementById('eventDetail').innerHTML = '';
+            });
+          });
+        }
+
+        renderCalendar();
+
+        if (usuarioEhAdmin) {
+          calendarAdminControls.style.display = 'block';
+
+          document.getElementById('addEventBtn').addEventListener('click', () => {
+            const titulo = document.getElementById('eventTitle').value.trim();
+            const data = document.getElementById('eventDate').value;
+            const hora = document.getElementById('eventTime').value || '19:00';
+
+            if (!titulo || !data) {
+              alert('Preencha título e data do evento.');
+              return;
+            }
+
+            addCalendarEvent({
+              id: `evt-${Date.now()}`,
+              titulo,
+              data,
+              hora,
+              dataHora: `${data}T${hora}`,
+              tipo: 'evento'
+            });
+
+            document.getElementById('eventTitle').value = '';
+            document.getElementById('eventDate').value = '';
+            document.getElementById('eventTime').value = '19:00';
+            renderCalendar();
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

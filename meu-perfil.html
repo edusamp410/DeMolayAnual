@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CTR | Meu perfil</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header class="page-header">
+        <div>
+          <h1 class="header-title">Meu perfil</h1>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+          <span id="roleBadge" class="badge">membro</span>
+          <button class="secondary-btn" type="button" onclick="window.location.href='perfil.html'">Voltar</button>
+          <button class="secondary-btn" type="button" onclick="logout()">Sair</button>
+        </div>
+      </header>
+
+      <section class="card profile-card">
+        <h2 id="userName">Carregando...</h2>
+        <p id="profileSummary" class="subtitle">Carregando dados do perfil...</p>
+
+        <div class="profile-meta">
+          <div class="meta-item">
+            <span class="meta-label">ID</span>
+            <span id="metaId" class="meta-value">-</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Nome</span>
+            <span id="metaNome" class="meta-value">-</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Perfil</span>
+            <span id="metaPapel" class="meta-value">-</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="roles.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const currentUser = requireAuth();
+        if (!currentUser) return;
+
+        const roleBadge = document.getElementById('roleBadge');
+        const userName = document.getElementById('userName');
+        const profileSummary = document.getElementById('profileSummary');
+        const metaId = document.getElementById('metaId');
+        const metaNome = document.getElementById('metaNome');
+        const metaPapel = document.getElementById('metaPapel');
+
+        const usuarioEhAdmin = isAdmin(currentUser);
+        roleBadge.textContent = currentUser.papel;
+        roleBadge.classList.toggle('admin', usuarioEhAdmin);
+
+        userName.textContent = currentUser.nome;
+        profileSummary.textContent = usuarioEhAdmin
+          ? 'Você acessa o sistema como administrador.'
+          : 'Seu perfil está ativo e atualizado no sistema.';
+
+        metaId.textContent = currentUser.id;
+        metaNome.textContent = currentUser.nome;
+        metaPapel.textContent = currentUser.papel;
+      });
+    </script>
+  </body>
+</html>

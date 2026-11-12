@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CTR | Painel de Presença</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header class="page-header">
+        <div>
+          <h1 class="header-title">Painel de presença</h1>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+          <span id="roleBadge" class="badge">membro</span>
+          <button class="secondary-btn" type="button" onclick="window.location.href='perfil.html'">Voltar</button>
+          <button class="secondary-btn" type="button" onclick="logout()">Sair</button>
+        </div>
+      </header>
+
+      <section class="card profile-card">
+        <h2 id="userName">Carregando...</h2>
+        <p id="panelSummary" class="subtitle">Carregando dados do painel...</p>
+      </section>
+
+      <section class="card admin-panel" style="margin-top: 22px;">
+        <h2>Calendário de eventos</h2>
+        <p class="subtitle">Todos podem visualizar. Apenas administradores podem alterar.</p>
+
+        <div id="calendarEvents" style="display: grid; gap: 12px; margin-top: 18px;"></div>
+
+        <div id="calendarAdminControls" style="margin-top: 18px; display: none;">
+          <h3>Adicionar evento</h3>
+          <div class="form-group">
+            <label for="eventTitle">Título</label>
+            <input id="eventTitle" type="text" placeholder="Ex.: Reunião geral" />
+          </div>
+          <div class="form-group">
+            <label for="eventDate">Data</label>
+            <input id="eventDate" type="date" />
+          </div>
+          <button id="addEventBtn" class="primary-btn" type="button" style="width: auto;">Adicionar evento</button>
+        </div>
+      </section>
+
+      <section class="card admin-panel" style="margin-top: 22px;">
+        <h2>Cerimônias públicas</h2>
+        <p class="subtitle">Todos podem visualizar. Apenas administradores podem realizar alterações e upload de arquivos.</p>
+
+        <div id="cerimoniasList" style="display: grid; gap: 12px; margin-top: 18px;"></div>
+
+        <div id="cerimoniasAdminControls" style="margin-top: 20px; display: none;">
+          <h3>Nova cerimônia pública</h3>
+
+          <div class="form-group">
+            <label for="cerimoniaTitulo">Título</label>
+            <input id="cerimoniaTitulo" type="text" placeholder="Ex.: Cerimônia de acolhimento" />
+          </div>
+
+          <div class="form-group">
+            <label for="cerimoniaDescricao">Descrição</label>
+            <textarea id="cerimoniaDescricao" rows="4" style="width:100%; border-radius:10px; background:#1f2630; color:#fff; border:1px solid rgba(255,255,255,0.09); padding:12px 14px;"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="cerimoniaArquivo">Upload de arquivo</label>
+            <input id="cerimoniaArquivo" type="file" />
+          </div>
+
+          <button id="addCerimoniaBtn" class="primary-btn" type="button" style="width: auto;">Salvar cerimônia</button>
+        </div>
+      </section>
+    </main>
+
+    <script src="roles.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const currentUser = requireAuth();
+        if (!currentUser) return;
+
+        const roleBadge = document.getElementById('roleBadge');
+        const userName = document.getElementById('userName');
+        const panelSummary = document.getElementById('panelSummary');
+        const calendarEvents = document.getElementById('calendarEvents');
+        const calendarAdminControls = document.getElementById('calendarAdminControls');
+        const cerimoniasList = document.getElementById('cerimoniasList');
+        const cerimoniasAdminControls = document.getElementById('cerimoniasAdminControls');
+
+        const usuarioEhAdmin = isAdmin(currentUser);
+        roleBadge.textContent = currentUser.papel;
+        roleBadge.classList.toggle('admin', usuarioEhAdmin);
+        userName.textContent = currentUser.nome;
+        panelSummary.textContent = usuarioEhAdmin
+          ? 'Você pode visualizar e gerenciar eventos, presenças e cerimônias públicas.'
+          : 'Você pode visualizar o calendário e as cerimônias públicas, mas apenas administradores podem editar.';
+
+        seedCalendarAndCeremonies();
+
+        function renderCalendar() {
+          const events = getCalendarEvents();
+          if (!events.length) {
+            calendarEvents.innerHTML = '<p class="subtitle">Nenhum evento agendado.</p>';
+            return;
+          }
+
+          calendarEvents.innerHTML = events.map((event) => `
+            <div class="card" style="padding: 16px; background: rgba(255,255,255,0.02);">
+              <strong>${event.titulo}</strong><br>
+              <small>${new Date(event.data + 'T00:00:00').toLocaleDateString('pt-BR')}</small>
+            </div>
+          `).join('');
+        }
+
+        function renderCerimonias() {
+          const items = getCerimoniasPublicas();
+          if (!items.length) {
+            cerimoniasList.innerHTML = '<p class="subtitle">Nenhuma cerimônia pública cadastrada.</p>';
+            return;
+          }
+
+          cerimoniasList.innerHTML = items.map((item) => `
+            <div class="card" style="padding: 18px; background: rgba(255,255,255,0.02);">
+              <strong>${item.titulo}</strong>
+              <p class="subtitle" style="margin: 10px 0;">${item.descricao || 'Sem descrição.'}</p>
+              <small>${new Date(item.data).toLocaleString('pt-BR')}</small>
+              ${item.arquivo ? `<div style="margin-top: 12px;"><a href="${item.arquivo}" target="_blank" class="primary-btn" style="display:inline-block; width:auto; text-decoration:none;">Abrir arquivo</a></div>` : ''}
+              ${usuarioEhAdmin ? `<div style="margin-top: 12px;"><button class="secondary-btn" type="button" data-remove-cerimonia="${item.id}" style="width:auto;">Remover</button></div>` : ''}
+            </div>
+          `).join('');
+
+          cerimoniasList.querySelectorAll('[data-remove-cerimonia]').forEach((button) => {
+            button.addEventListener('click', () => {
+              const id = button.getAttribute('data-remove-cerimonia');
+              removeCerimoniaPublica(id);
+              renderCerimonias();
+            });
+          });
+        }
+
+        renderCalendar();
+        renderCerimonias();
+
+        if (usuarioEhAdmin) {
+          calendarAdminControls.style.display = 'block';
+          cerimoniasAdminControls.style.display = 'block';
+
+          document.getElementById('addEventBtn').addEventListener('click', () => {
+            const titulo = document.getElementById('eventTitle').value.trim();
+            const data = document.getElementById('eventDate').value;
+
+            if (!titulo || !data) return alert('Preencha título e data do evento.');
+
+            addCalendarEvent({
+              id: `evt-${Date.now()}`,
+              titulo,
+              data,
+              tipo: 'evento'
+            });
+
+            document.getElementById('eventTitle').value = '';
+            document.getElementById('eventDate').value = '';
+            renderCalendar();
+          });
+
+          document.getElementById('addCerimoniaBtn').addEventListener('click', () => {
+            const titulo = document.getElementById('cerimoniaTitulo').value.trim();
+            const descricao = document.getElementById('cerimoniaDescricao').value.trim();
+            const arquivoInput = document.getElementById('cerimoniaArquivo');
+            const arquivo = arquivoInput.files && arquivoInput.files[0] ? URL.createObjectURL(arquivoInput.files[0]) : '';
+
+            if (!titulo) return alert('Informe o título da cerimônia.');
+
+            addCerimoniaPublica({
+              id: `cer-${Date.now()}`,
+              titulo,
+              descricao,
+              arquivo,
+              data: new Date().toISOString()
+            });
+
+            document.getElementById('cerimoniaTitulo').value = '';
+            document.getElementById('cerimoniaDescricao').value = '';
+            arquivoInput.value = '';
+            renderCerimonias();
+          });
+        }
+      });
+    </script>
+  </body>
+</html>
